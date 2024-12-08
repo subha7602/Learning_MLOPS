@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v2
 
       - name: Configure AWS credentials
@@ -30,10 +30,19 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
           IMAGE_TAG: latest
         run: |
-          echo "ECR_REGISTRY: $ECR_REGISTRY"
-          echo "ECR_REPOSITORY: $ECR_REPOSITORY"
+          # Debugging environment variables
+          echo "ECR_REGISTRY: [$ECR_REGISTRY]"
+          echo "ECR_REPOSITORY: [$ECR_REPOSITORY]"
+          echo "IMAGE_TAG: [$IMAGE_TAG]"
+
+          # Ensure the ECR_REPOSITORY variable is trimmed
+          ECR_REPOSITORY=$(echo "$ECR_REPOSITORY" | tr -d '\n\r')
+
+          # Build and push Docker image
           docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" .
           docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+          # Set output for downstream jobs
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
   Continuous-Deployment:
@@ -41,7 +50,7 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Configure AWS credentials
@@ -63,4 +72,4 @@ jobs:
             -e AWS_DEFAULT_REGION="${{ secrets.AWS_DEFAULT_REGION }}" \
             -e MONGODB_URL="${{ secrets.MONGODB_URL }}" \
             -p 8081:8081 \
-            "${{ steps.login-ecr.outputs.registry }}/{{ secrets.ECR_REPO }}:latest"
+            "${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPO }}:latest"
