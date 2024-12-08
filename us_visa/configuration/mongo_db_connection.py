@@ -1,22 +1,18 @@
 import sys
-
+import os
+import certifi
+from pymongo import MongoClient
 from us_visa.exception import USvisaException
 from us_visa.logger import logging
-
-import os
 from us_visa.constants import DATABASE_NAME, MONGODB_URL_KEY
-import pymongo
-import certifi
-
-ca = certifi.where()
 
 class MongoDBClient:
     """
-    Class Name :   export_data_into_feature_store
-    Description :   This method exports the dataframe from mongodb feature store as dataframe 
+    Class Name :   MongoDBClient
+    Description :   This class initializes a MongoDB client and connects to a specified database.
     
-    Output      :   connection to mongodb database
-    On Failure  :   raises an exception
+    Output      :   MongoDB database connection object
+    On Failure  :   Raises USvisaException
     """
     client = None
 
@@ -24,12 +20,13 @@ class MongoDBClient:
         try:
             if MongoDBClient.client is None:
                 mongo_db_url = os.getenv(MONGODB_URL_KEY)
-                if mongo_db_url is None:
+                if not mongo_db_url:
                     raise Exception(f"Environment key: {MONGODB_URL_KEY} is not set.")
-                MongoDBClient.client = pymongo.MongoClient(mongo_db_url, tlsCAFile=ca)
+                MongoDBClient.client = MongoClient(mongo_db_url, tlsCAFile=certifi.where())
             self.client = MongoDBClient.client
             self.database = self.client[database_name]
             self.database_name = database_name
-            logging.info("MongoDB connection succesfull")
+            logging.info(f"MongoDB connection to '{database_name}' successful")
         except Exception as e:
-            raise USvisaException(e,sys)
+            logging.error("Failed to connect to MongoDB")
+            raise USvisaException(e, sys)
