@@ -1,0 +1,89 @@
+# MLOps-US Visa Approval Prediction Project
+
+## How to Run the Project
+1. Create a virtual environment:
+    ```bash
+    conda create -n visa python=3.8 -y
+    conda activate visa
+    ```
+2. Install the required dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+---
+
+## Project Workflow
+The project workflow is divided into the following modules:
+1. **Constants**  
+2. **Entity**  
+3. **Components**  
+4. **Pipeline**  
+5. **Main File**
+
+---
+
+## AWS CI/CD Deployment with GitHub Actions
+
+### Steps for Deployment
+
+1. **Login to AWS Console.**
+2. **Create an IAM User for Deployment** with the following access:
+    - **EC2 Access:** For managing virtual machines.
+    - **ECR Access:** For saving Docker images in AWS Elastic Container Registry.
+
+### Deployment Description
+1. Build a Docker image of the source code.
+2. Push the Docker image to ECR.
+3. Launch an EC2 instance.
+4. Pull the Docker image from ECR to the EC2 instance.
+5. Launch the Docker image in the EC2 instance.
+
+---
+
+## AWS Policy Requirements
+- **AmazonEC2ContainerRegistryFullAccess**
+- **AmazonEC2FullAccess**
+
+---
+
+## Deployment Steps
+
+### 1. Create an ECR Repository
+- Save the URI:  
+  `315865595366.dkr.ecr.us-east-1.amazonaws.com/visarepo`
+
+### 2. Create an EC2 Machine
+- Select Ubuntu as the OS.
+
+### 3. Install Docker in the EC2 Machine
+Run the following commands in the EC2 instance:
+```bash
+# Optional
+sudo apt-get update -y
+sudo apt-get upgrade -y
+
+# Required
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker ubuntu
+newgrp docker
+
+### 4. Configure EC2 as a Self-Hosted Runner
+Go to your GitHub repository.
+Navigate to Settings > Actions > Runners > New Self-Hosted Runner.
+Choose the OS and follow the displayed commands to set up the runner.
+
+### 5. Setup GitHub Secrets
+Add the following secrets to your GitHub repository:
+
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWS_DEFAULT_REGION
+ECR_REPO
+Copy code
+
+
+
+
+
